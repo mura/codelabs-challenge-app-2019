@@ -1,6 +1,7 @@
 package droidkaigi.github.io.challenge2019
 
 import android.app.Activity
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -22,10 +23,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
 class MainActivity : BaseActivity() {
-
-    companion object {
-        private const val STATE_STORIES = "stories"
-    }
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressView: ProgressBar
@@ -87,32 +84,29 @@ class MainActivity : BaseActivity() {
 
         swipeRefreshLayout.setOnRefreshListener { loadTopStories() }
 
-        val savedStories = savedInstanceState?.let { bundle ->
-            bundle.getSerializable(STATE_STORIES) as ArrayList<Item>?
-        }
 
-        if (savedStories != null) {
-            storyAdapter.stories = savedStories.toMutableList()
+        val topStoriesObserver = Observer<List<Item?>> { items ->
+            storyAdapter.stories = items?.toMutableList() ?: mutableListOf()
             storyAdapter.alreadyReadStories = viewModel.articleIds()
             storyAdapter.notifyDataSetChanged()
+        }
+        viewModel.topStories.observe(this, topStoriesObserver)
+
+        if (viewModel.loadSavedStories(savedInstanceState)) {
             return
         }
-
         progressView.visibility = Util.setVisibility(true)
         loadTopStories()
     }
 
     private fun loadTopStories() {
-        HackerNewsRepository.topStories()
+        viewModel.loadTopStories()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .autoDisposable(AndroidLifecycleScopeProvider.from(this))
-            .subscribe({ items ->
+            .subscribe({
                 progressView.visibility = View.GONE
                 swipeRefreshLayout.isRefreshing = false
-                storyAdapter.stories = items.toMutableList()
-                storyAdapter.alreadyReadStories = viewModel.articleIds()
-                storyAdapter.notifyDataSetChanged()
             }, { throwable ->
                 showError(throwable)
             })
@@ -146,7 +140,7 @@ class MainActivity : BaseActivity() {
 
     override fun onSaveInstanceState(outState: Bundle?) {
         outState?.apply {
-            putSerializable(STATE_STORIES, ArrayList<Item>(storyAdapter.stories))
+            putAll(viewModel.outState())
         }
 
         super.onSaveInstanceState(outState)
