@@ -14,7 +14,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
-import com.squareup.moshi.Types
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.kotlin.autoDisposable
 import droidkaigi.github.io.challenge2019.data.HackerNewsRepository
@@ -38,9 +37,6 @@ class StoryActivity : BaseActivity() {
     private lateinit var commentAdapter: CommentAdapter
 
     private var hideProgressTask: AsyncTask<Unit, Unit, Unit>? = null
-    private val itemJsonAdapter = moshi.adapter(Item::class.java)
-    private val itemsJsonAdapter =
-        moshi.adapter<List<Item?>>(Types.newParameterizedType(List::class.java, Item::class.java))
 
     private var item: Item? = null
 
@@ -51,9 +47,7 @@ class StoryActivity : BaseActivity() {
         recyclerView = findViewById(R.id.comment_recycler)
         progressView = findViewById(R.id.progress)
 
-        item = intent.getStringExtra(EXTRA_ITEM_JSON)?.let {
-            itemJsonAdapter.fromJson(it)
-        }
+        item = intent.getSerializableExtra(EXTRA_ITEM_JSON) as Item?
 
         recyclerView.isNestedScrollingEnabled = false
         val itemDecoration = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
@@ -64,9 +58,7 @@ class StoryActivity : BaseActivity() {
         if (item == null) return
 
         val savedComments = savedInstanceState?.let { bundle ->
-            bundle.getString(STATE_COMMENTS)?.let { itemsJson ->
-                itemsJsonAdapter.fromJson(itemsJson)
-            }
+            bundle.getSerializable(STATE_COMMENTS) as ArrayList<Item>?
         }
 
         if (savedComments != null) {
@@ -147,7 +139,7 @@ class StoryActivity : BaseActivity() {
 
     override fun onSaveInstanceState(outState: Bundle?) {
         outState?.apply {
-            putString(STATE_COMMENTS, itemsJsonAdapter.toJson(commentAdapter.comments))
+            putSerializable(STATE_COMMENTS, ArrayList<Item>(commentAdapter.comments))
         }
 
         super.onSaveInstanceState(outState)

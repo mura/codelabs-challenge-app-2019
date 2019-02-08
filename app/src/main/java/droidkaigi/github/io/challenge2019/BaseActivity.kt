@@ -6,15 +6,12 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import com.squareup.moshi.Moshi
 
 abstract class BaseActivity : AppCompatActivity() {
 
     companion object {
         const val ACTIVITY_REQUEST = 1
     }
-
-    internal val moshi = Moshi.Builder().build()
 
     fun showError(throwable: Throwable) {
         Log.v("error", throwable.message)

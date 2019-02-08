@@ -13,7 +13,6 @@ import android.support.v7.widget.RecyclerView
 import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
-import com.squareup.moshi.Types
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.kotlin.autoDisposable
 import droidkaigi.github.io.challenge2019.data.HackerNewsRepository
@@ -36,10 +35,6 @@ class MainActivity : BaseActivity() {
 
     private lateinit var viewModel: MainViewModel
 
-    private val itemJsonAdapter = moshi.adapter(Item::class.java)
-    private val itemsJsonAdapter =
-        moshi.adapter<List<Item?>>(Types.newParameterizedType(List::class.java, Item::class.java))
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -55,9 +50,8 @@ class MainActivity : BaseActivity() {
         storyAdapter = StoryAdapter(
             stories = mutableListOf(),
             onClickItem = { item ->
-                val itemJson = itemJsonAdapter.toJson(item)
                 val intent = Intent(this@MainActivity, StoryActivity::class.java).apply {
-                    putExtra(StoryActivity.EXTRA_ITEM_JSON, itemJson)
+                    putExtra(StoryActivity.EXTRA_ITEM_JSON, item)
                 }
                 startActivityForResult(intent)
             },
@@ -94,9 +88,7 @@ class MainActivity : BaseActivity() {
         swipeRefreshLayout.setOnRefreshListener { loadTopStories() }
 
         val savedStories = savedInstanceState?.let { bundle ->
-            bundle.getString(STATE_STORIES)?.let { itemsJson ->
-                itemsJsonAdapter.fromJson(itemsJson)
-            }
+            bundle.getSerializable(STATE_STORIES) as ArrayList<Item>?
         }
 
         if (savedStories != null) {
@@ -154,7 +146,7 @@ class MainActivity : BaseActivity() {
 
     override fun onSaveInstanceState(outState: Bundle?) {
         outState?.apply {
-            putString(STATE_STORIES, itemsJsonAdapter.toJson(storyAdapter.stories))
+            putSerializable(STATE_STORIES, ArrayList<Item>(storyAdapter.stories))
         }
 
         super.onSaveInstanceState(outState)
