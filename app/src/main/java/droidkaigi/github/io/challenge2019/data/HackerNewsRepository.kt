@@ -24,6 +24,12 @@ object HackerNewsRepository {
     }
 
     fun item(id: Long): Single<Item> {
-        return hackerNewsApi.getItemAsSingle(id);
+        return hackerNewsApi.getItemAsSingle(id)
+    }
+
+    fun comments(ids: List<Long>): Single<List<Item>> {
+        return Observable.fromIterable(ids)
+            .flatMap { id -> hackerNewsApi.getItemAsSingle(id).toObservable() }
+            .toList()
     }
 }

@@ -113,7 +113,7 @@ class MainActivity : BaseActivity() {
         HackerNewsRepository.topStories()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(AndroidLifecycleScopeProvider.from(lifecycle))
+            .autoDisposable(AndroidLifecycleScopeProvider.from(this))
             .subscribe({ items ->
                 progressView.visibility = View.GONE
                 swipeRefreshLayout.isRefreshing = false
