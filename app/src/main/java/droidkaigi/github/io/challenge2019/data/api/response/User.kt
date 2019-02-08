@@ -2,6 +2,7 @@ package droidkaigi.github.io.challenge2019.data.api.response
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import java.io.Serializable
 
 @JsonClass(generateAdapter = true)
 data class User(
@@ -17,4 +18,4 @@ data class User(
     val about: String,
     @Json(name = "submitted")
     val submitted: List<Long>
-)
+) : Serializable

@@ -14,7 +14,7 @@ class ArticlePreferences {
             val tmps = mutableSetOf<String>()
             tmps.addAll(data)
             tmps.add(articleId)
-            p.edit().putStringSet(ARTICLE_IDS_KEY, tmps).commit()
+            p.edit().putStringSet(ARTICLE_IDS_KEY, tmps).apply()
         }
 
         fun getArticleIds(context: Context): Set<String> {
@@ -22,5 +22,4 @@ class ArticlePreferences {
             return p.getStringSet(ARTICLE_IDS_KEY, setOf()) ?: setOf()
         }
     }
-
 }

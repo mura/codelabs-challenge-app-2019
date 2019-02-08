@@ -2,6 +2,7 @@ package droidkaigi.github.io.challenge2019.data.api.response
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import java.io.Serializable
 
 @JsonClass(generateAdapter = true)
 data class Item(
@@ -35,7 +36,7 @@ data class Item(
     val parts: List<Long> = emptyList(),
     @Json(name = "descendants")
     val descendants: Int = 0
-) {
+) : Serializable {
     companion object {
         const val NO_ID = -1L
     }
